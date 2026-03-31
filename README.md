@@ -36,7 +36,7 @@
 
 ```cmd
 # 手動編譯範例 (使用 clang):
-clang++ cli\main.cpp core\config.cpp core\cursor.cpp core\scheduler.cpp core\utils.cpp -o curator_cli.exe -ladvapi32 -municode -mwindows
+clang++ cli\main.cpp core\config.cpp core\cursor.cpp core\scheduler.cpp core\utils.cpp -o curator_cli.exe -I deps -ladvapi32 -municode -mwindows
 ```
 
 ## ⚙️ 環境設定 (Config)
