@@ -4,33 +4,40 @@
 #include <fcntl.h>
 #include <string>
 #include <stdexcept>
+#include <filesystem>
 
 #include "../core/config.h"
 #include "../core/cursor.h"
 #include "../core/scheduler.h"
 #include "../core/utils.h"
 
+// 套用一個套裝（查找 Config packages 中是否有自訂 mapping）
+static void applyChosenPack(const std::filesystem::path &chosen, const Config &cfg) {
+  std::wstring packName = chosen.filename().wstring();
+  int idx = findPackageIndex(cfg, packName);
+  if (idx >= 0)
+    applyPackage(cfg, cfg.packages[idx]);
+  else
+    applyPack(chosen);
+}
+
 void execute_main(const Config &cfg, const std::wstring &arg, const std::wstring &configPath, bool silent) {
   try {
     if (arg == L"--run-once") {
-      auto packs = listPacks(cfg.cursor_dir);
+      auto packs = listPacks(cfg.packages_path);
       auto p = choosePack(packs, cfg);
-      applyPack(p);
-      
+      applyChosenPack(p, cfg);
       setCursorShadow(cfg.shadow);
-
       if (!silent) {
         std::wcout << L"Applied: " << p.wstring() << L"\n";
       }
     } else if (arg == L"--start") {
       createTask(cfg, configPath);
       // 立即套用一次
-      auto packs = listPacks(cfg.cursor_dir);
+      auto packs = listPacks(cfg.packages_path);
       auto p = choosePack(packs, cfg);
-      applyPack(p);
-
+      applyChosenPack(p, cfg);
       setCursorShadow(cfg.shadow);
-
       if (!silent) {
         std::wcout << L"Started\n";
       }
