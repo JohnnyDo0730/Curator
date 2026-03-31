@@ -1,0 +1,15 @@
+# 自訂排除
+/self
+/cursors/*
+!/cursors/.gitkeep
+
+# 本機設定檔與狀態檔（避免洩漏私人路徑）
+config.json
+state.idx
+
+# 編譯生成的檔案
+*.exe
+*.obj
+*.pdb
+*.ilk
+.vscode/

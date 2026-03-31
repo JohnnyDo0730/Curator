@@ -1,0 +1,8 @@
+{
+  "mode": "round",
+  "interval_minutes": 30,
+  "cursor_dir": "C:\\Your\\Path\\To\\cursors",
+  "shadow": true,
+  "task_name": "CursorTool",
+  "state_idx_path": "C:\\Your\\Path\\To\\state.idx"
+}
