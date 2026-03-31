@@ -24,12 +24,19 @@
 
 ## 📦 如何建置 (Build)
 
-本專案可以直接使用支援 C++ 17 以上的編譯器進行編譯（例如 MSVC, MinGW）：
-（使用底下的指令或是你的 IDE 或是 VSCode 預設快捷鍵直接編譯 `curator_cli.cpp`）
+為了替未來的圖形化介面做準備，專案目前已拆分為底層核心 `core/`、命令列 `cli/` 以及介面 `gui/` (開發中) 等模組。
+您可以直接使用根目錄提供的 `build.bat` 腳本來快速建置 CLI 版本工具 (需要預先安裝 clang 等編譯器)：
 
 ```cmd
-# 編譯範例 (使用 clang):
-clang++ curator_cli.cpp -o curator_cli.exe -ladvapi32 -municode -mwindows
+# 使用建置腳本自動編譯
+.\build.bat
+```
+
+若您希望手動編譯，請記得將 `cli/main.cpp` 與 `core/` 目錄下的所有實作檔一併加入編譯指令中：
+
+```cmd
+# 手動編譯範例 (使用 clang):
+clang++ cli\main.cpp core\config.cpp core\cursor.cpp core\scheduler.cpp core\utils.cpp -o curator_cli.exe -ladvapi32 -municode -mwindows
 ```
 
 ## ⚙️ 環境設定 (Config)
@@ -84,7 +91,7 @@ curator_cli.exe --config "Your\Path\To\config.json" --stop
 - `Text.ani` 或 `Text.cur`
 - `Working.ani` 或 `Working.cur`
 
-*(若有缺少檔案，程式會幫你 fallback 到 Windows 的預設游標；如果你想改變配對的檔名，可以直接至 `curator_cli.cpp` 中的 `kMap` 變數擴充與修改)。*
+*(若有缺少檔案，程式會幫你 fallback 到 Windows 的預設游標；如果你想改變配對的檔名，可以直接至 `core/cursor.cpp` 中的 `kMap` 變數擴充與修改)。*
 
 ## ⚠️ 聲明
 此工具純粹修改目前使用者的游標登錄檔並發送刷新 UI 訊號，如需解除安裝，只要執行 `--stop` 即可；請放心使用。
