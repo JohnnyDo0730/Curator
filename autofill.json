@@ -1,0 +1,59 @@
+{
+  "AppStarting": [
+    "Working.cur",
+    "Working.ani"
+  ],
+  "Arrow": [
+    "Normal.cur",
+    "Normal.ani"
+  ],
+  "Crosshair": [
+    "Precision.ani"
+  ],
+  "Hand": [
+    "Link.cur",
+    "Link.ani"
+  ],
+  "Help": [
+    "Help.cur",
+    "Help.ani"
+  ],
+  "IBeam": [
+    "Text.cur",
+    "Text.ani"
+  ],
+  "NWPen": [
+    "Handwriting.ani"
+  ],
+  "No": [
+    "Unavailable.ani"
+  ],
+  "Person": [
+    "Person.ani"
+  ],
+  "Pin": [
+    "Pin.ani"
+  ],
+  "SizeAll": [
+    "Move.ani"
+  ],
+  "SizeNESW": [
+    "Diagonal2.ani"
+  ],
+  "SizeNS": [
+    "Vertical.ani"
+  ],
+  "SizeNWSE": [
+    "Diagonal1.ani"
+  ],
+  "SizeWE": [
+    "Horizontal.ani"
+  ],
+  "UpArrow": [
+    "Alternate.ani"
+  ],
+  "Wait": [
+    "Busy.cur",
+    "Busy.ani"
+  ]
+}

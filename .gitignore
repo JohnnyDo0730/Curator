@@ -2,6 +2,9 @@
 /self
 /cursors/*
 !/cursors/.gitkeep
+!/cursors/00_default/
+/cursors/00_default/*
+!/cursors/00_default/.gitkeep
 
 # 本機設定檔與狀態檔（避免洩漏私人路徑）
 config.json

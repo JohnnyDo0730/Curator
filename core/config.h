@@ -22,12 +22,13 @@ struct Config {
   std::wstring mode            = L"random"; // random | round
   int          interval_minutes = 10;
   bool         shadow           = true;
+  int          cursor_size      = 1;
   std::wstring task_name        = L"CursorTool";
   std::wstring state_idx_path   = L"state.idx";
 
   // [packages]
   std::wstring packages_path;              // 套裝根資料夾
-  std::vector<CursorPackage> packages;     // 套裝清單 (00_alternative = 預設)
+  std::vector<CursorPackage> packages;     // 套裝清單 (00_default = 預設)
 };
 
 // 已知游標角色名稱清單（與 registry 鍵值一致）
@@ -38,28 +39,24 @@ static const wchar_t* kCursorRoles[] = {
   L"Person", L"Pin", L"NWPen", L"UpArrow"
 };
 
+// 常用名稱（用於 GUI 顯示）
+static const wchar_t* kCursorFriendlyNames[] = {
+  L"一般", L"連結", L"說明", L"文字", L"忙碌",
+  L"背景作業", L"精確選擇", L"無法使用",
+  L"移動", L"垂直調整", L"水平調整", L"對角(左上-右下)", L"對角(右上-左下)",
+  L"人形", L"位置", L"手寫", L"代替"
+};
+
+static const int kCursorRoleCount = 17;
+
 // 預設映射（角色 -> 檔案名稱），供套裝未指定時 fallback 使用
 // （空字串代表清除該游標，使用系統預設樣式）
 static inline std::map<std::wstring, std::wstring> defaultMapping() {
-  return {
-    {L"Arrow",        L"Normal.ani"},
-    {L"Hand",         L"Link.ani"},
-    {L"Help",         L"Help.ani"},
-    {L"IBeam",        L"Text.ani"},
-    {L"Wait",         L"Working.ani"},
-    {L"AppStarting",  L"Working.ani"},
-    {L"Crosshair",    L""},
-    {L"No",           L""},
-    {L"SizeAll",      L""},
-    {L"SizeNS",       L""},
-    {L"SizeWE",       L""},
-    {L"SizeNWSE",     L""},
-    {L"SizeNESW",     L""},
-    {L"Person",       L""},
-    {L"Pin",          L""},
-    {L"NWPen",        L""},
-    {L"UpArrow",      L""},
-  };
+  std::map<std::wstring, std::wstring> m;
+  for (int i = 0; i < kCursorRoleCount; ++i) {
+    m[kCursorRoles[i]] = L"";
+  }
+  return m;
 }
 
 Config loadConfig(const std::wstring &path);

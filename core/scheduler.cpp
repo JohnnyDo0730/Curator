@@ -20,6 +20,11 @@ void createTask(const Config &cfg, const std::wstring &configPath) {
 }
 
 void deleteTask(const Config &cfg) {
-  std::wstring cmd = L"schtasks /delete /tn \"" + cfg.task_name + L"\" /f";
+  std::wstring cmd = L"schtasks /delete /tn \"" + cfg.task_name + L"\" /f >nul 2>&1";
   runCmd(cmd);
+}
+
+bool checkTaskExists(const Config &cfg) {
+  std::wstring cmd = L"schtasks /query /tn \"" + cfg.task_name + L"\" >nul 2>&1";
+  return runCmd(cmd) == 0;
 }

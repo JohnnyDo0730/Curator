@@ -1,97 +1,92 @@
 # Curator: Windows Cursor Rotator Tool (自動更換游標小工具)
 
-一個基於 C++ 撰寫的 Windows 游標自動化專案。目前已完成**核心命令列 (CLI) 引擎**的開發，能夠幫助你自動且定期地更換 Windows 電腦的系統游標 (Cursor)。透過串接 Windows 工作排程器 (Task Scheduler)，讓每天的電腦操作都有一點小驚喜！
+一個基於 C++ 撰寫的 Windows 游標自動化管理工具。目前已完成從核心引擎 (CLI) 到**圖形化介面 (GUI)** 的全面開發。透過直覺的視窗操作，您可以輕鬆管理多個游標套裝 (Cursor Packs)，並設定自動輪替排程。
 
-> **🚀 發展近況與 Roadmap**
-> 目前釋出的版本為主打輕量且穩定可靠的 CLI 核心，背景切換與排程邏輯已完整就緒。
-> **下一個目標是實現 GUI 圖形化介面**，屆時將支援更直覺的：
-> - 視覺化排程設定 (Schedule Settings)
-> - 游標套裝綁定與預覽 (Cursor Pack Bindings)
-> 敬請期待！
+> **🚀 發展階段：GUI 完整就緒**
+> 本工具已進化為完全面向用戶的圖形化軟體。所有的排程啟動、套裝映射、以及自動匹配規則均可透過視窗完成，無需再手動編輯 JSON 配置文件。
 
-## ✨ 特色功能 (CLI 核心)
+---
 
-- **多種模式支援**：支援 `random` (隨機抽籤) 以及 `round` (依序輪替) 模式。
-- **背景自動化**：內建 `--start` 參數能直接將此工具加入「Windows 工作排程器」中，自動以設定的分鐘數在背景輪替游標。
-- **安全不留痕**：透過修改 Windows 登錄檔 (Registry) `Control Panel\Cursors` 達成切換，並可使用 `--stop` 一鍵移除排程並還原 Windows 預設游標。
-- **極簡高效**：無參雜任何肥大的框架，純 Windows API 與 C++ 標準函式庫，執行檔極度輕巧。
+## ✨ 核心特色
 
-## 🗺️ 未來規劃 (Roadmap)
+- **直覺的圖形化介面**：提供 DPI 自適應的現代化視窗，支持所有設定的視覺化操作。
+- **智慧角色映射 (Mapping)**：
+  - **三欄式清單**：清晰顯示「常用名稱」、「系統名稱」與「套用檔案」。
+  - **快速匹配規則**：內建自動匹配引擎，一鍵掃描套裝資料夾並根據檔名規則自動填入映射。
+  - **註冊學習功能**：支持將目前的套裝映射「學習」為全局規則，方便以後自動套用相同檔名的游標。
+- **強大的背景自動化**：
+  - 串接 Windows 工作排程器 (Task Scheduler)，支持「循環」或「隨機」輪替模式。
+  - **安全不留痕**：透過 Registry `Control Panel\Cursors` 切換，支持一鍵還原系統預設。
+- **極簡高效**：無第三方重量級 UI 框架，純 Win32 API 打造，執行檔極其輕巧且啟動迅速。
 
-- [x] **階段一：CLI 核心引擎** (當前進度) - 穩定的游標切換、狀態還原、以及排程自動化功能。
-- [ ] **階段二：GUI 圖形化控制面板** - 開發視覺化設定工具，免除手動編輯 JSON 的繁瑣。
-- [ ] **階段三：進階套裝管理** - 支援快速匯入主題、套裝綁定與進階的輪替策略。
+---
 
 ## 📦 如何建置 (Build)
 
-為了替未來的圖形化介面做準備，專案目前已拆分為底層核心 `core/`、命令列 `cli/` 以及介面 `gui/` (開發中) 等模組。
-您可以直接使用根目錄提供的 `build.bat` 腳本來快速建置 CLI 版本工具 (需要預先安裝 clang 等編譯器)：
+本專案採用模組化設計：`core/` (核心邏輯), `gui/` (圖形介面), `cli/` (背景引擎)。
+您可以使用根目錄提供的 `build.bat` 腳本進行編譯（需預先安裝 `clang` 與 `windres`）：
 
 ```cmd
-# 使用建置腳本自動編譯
+# 執行建置腳本
 .\build.bat
 ```
 
-若您希望手動編譯，請記得將 `cli/main.cpp` 與 `core/` 目錄下的所有實作檔一併加入編譯指令中：
+建置完成後，您會獲得：
+- `curator_gui.exe`: **主程式**，用戶所有的介面操作均在此進行。
+- `curator_cli.exe`: **後台引擎**，由 GUI 調用或排程自動執行，不建議一般用戶直接操作。
 
-```cmd
-# 手動編譯範例 (使用 clang):
-clang++ cli\main.cpp core\config.cpp core\cursor.cpp core\scheduler.cpp core\utils.cpp -o curator_cli.exe -I deps -ladvapi32 -municode -mwindows
+---
+
+## 🚀 使用指南 (GUI 入門)
+
+### 1. 初次啟動
+執行 `curator_gui.exe`。程式會在同目錄下自動生成或讀取 `config.json` 與 `autofill.json`。
+
+### 2. 執行分頁 (Tab 0)
+- **套裝根目錄**：選擇您存放所有游標資料夾的母目錄。
+- **輪循設置**：設定輪替模式（循環/隨機）與時間間隔（分鐘）。
+- **啟動/終止**：一鍵將自動換游標功能加入系統排程，或徹底移除。
+- **恢復預設**：立即將游標恢復為 Windows 原始狀態。
+
+### 3. 套裝設置分頁 (Tab 1)
+- **選擇編輯套裝**：切換不同的子資料夾進行細項設定。
+- **自動匹配規則**：根據您已知的規則，自動掃描資料夾內的檔案並填入映射表。
+- **註冊當前規則**：將當前套裝的映射關係註冊為全局規則，讓以後的自動匹配更聰明。
+- **儲存所有設置**：將所有變更寫入設定檔。
+
+---
+
+## 📂 建議目錄結構
+```text
+Cursors_Root/
+├── 01_Character_A (角色A)/
+│   ├── Normal.cur
+│   ├── Link.cur
+│   └── ...
+└── 02_Character_B (角色B)/
+    ├── Normal.ani
+    ├── Link.ani
+    └── ...
 ```
 
-## ⚙️ 環境設定 (Config)
+---
 
-初次下載回來使用，請參考專案中的 `config.example.json`，將其複製並命名為 `config.json`：
+## 🛠️ 技術說明 (CLI 引擎)
 
-```json
-{
-  "mode": "round", 
-  "interval_minutes": 10,
-  "cursor_dir": "C:\\Your\\Path\\To\\cursors",
-  "shadow": true,
-  "task_name": "CursorTool",
-  "state_idx_path": "C:\\Your\\Path\\To\\state.idx"
-}
-```
+雖然本工具已全面走向 GUI，但 `curator_cli.exe` 仍承擔著關鍵的背景執行任務：
+- `--run-once`: 供工作排程器調用，執行單次游標切換。
+- `--start / --stop`: 在背景管理排程任務與恢復預設。
 
-### 參數說明：
-- `mode`: `random` 為隨機切換；`round` 為依資料夾順序切換。
-- `interval_minutes`: 排程執行的間隔時間 (以分鐘為單位)。
-- `cursor_dir`: 存放所有游標組合 (Packs) 的「母目錄」絕對路徑。（注意：JSON 中的反斜線 `\` 必須寫成雙斜線 `\\`）。
-- `shadow`: 是否為游標加上系統原生陰影 (`true`/`false`)，建議開啟，否則游標可能呈現透明等問題。
-- `task_name`: 註冊進 Windows 排程器的工作名稱，未來可用來識別或手動刪除。
-- `state_idx_path`: 存放當前游標組合的索引檔，請使用絕對路徑。
-
-*(註：使用絕對路徑是因為 Windows 排程器在背景執行時，工作目錄通常為系統目錄而非程式所在目錄，為確保檔案不會分散，建議將 config.json 與 state.idx 放在專案目錄下。)*
-
-## 🚀 使用方式
-
-你可以透過終端機 (命令列) 來執行此工具：
-
-```cmd
-# 立即切換游標一次 (不加入背景排程)
-curator_cli.exe --config "Your\Path\To\config.json" --run-once
-
-# 若加上 --silent 將不印出任何執行訊息，適合背景執行
-curator_cli.exe --config "Your\Path\To\config.json" --run-once --silent
-
-# 建立 Windows 排程工作 (以 config 設定的分鐘數自動輪替)，並立刻套用新游標
-curator_cli.exe --config "Your\Path\To\config.json" --start
-
-# 移除排程工作，並立刻將游標還原為 Windows 預設狀態
-curator_cli.exe --config "Your\Path\To\config.json" --stop
-```
-
-## 📂 游標包目錄結構
-
-你的 `cursor_dir` 資料夾下，可以放入各個不同主題的游標子資料夾。每個子資料夾至少應該包含以下幾種游標檔案名稱（程式預設對應的檔名）：
-- `Normal.ani` 或 `Normal.cur`
-- `Help.ani` 或 `Help.cur`
-- `Link.ani` 或 `Link.cur`
-- `Text.ani` 或 `Text.cur`
-- `Working.ani` 或 `Working.cur`
-
-*(若有缺少檔案，程式會幫你 fallback 到 Windows 的預設游標；如果你想改變配對的檔名，可以直接至 `core/cursor.cpp` 中的 `kMap` 變數擴充與修改)。*
+---
 
 ## ⚠️ 聲明
-此工具純粹修改目前使用者的游標登錄檔並發送刷新 UI 訊號，如需解除安裝，只要執行 `--stop` 即可；請放心使用。
+此工具僅修改當前使用者的游標登錄檔並發送刷新訊號。程式碼開源透明，不包含任何後門。若需移除，請在 GUI 中點擊「恢復預設」並點擊「終止」即可。
+
+---
+
+## 🗺️ Roadmap
+- [x] **CLI 核心引擎** (已完成)
+- [x] **GUI 圖形化控制面板** (已完成)
+- [x] **智慧自動匹配與規則學習** (已完成)
+- [ ] **游標大小調整支持** (規劃中)
+- [ ] **暗黑模式界面支援** (願望清單)
