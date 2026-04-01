@@ -97,14 +97,15 @@ bool Autofill::applyTo(CursorPackage& pkg, const std::wstring& packageFolder) {
     return changed;
 }
 
-void Autofill::addRule(const std::wstring& role, const std::wstring& filename) {
-    if (role.empty() || filename.empty()) return;
+bool Autofill::addRule(const std::wstring& role, const std::wstring& filename) {
+    if (role.empty() || filename.empty()) return false;
     auto& list = entries[role];
     // 檢查是否已存在
     for (auto& ex : list) {
-        if (ex == filename) return;
+        if (ex == filename) return false;
     }
     list.push_back(filename);
+    return true;
 }
 
 Autofill loadAutofill(const std::wstring& path) {

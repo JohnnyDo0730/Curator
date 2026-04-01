@@ -23,33 +23,43 @@
     "Text.ani"
   ],
   "NWPen": [
+    "Handwriting.cur",
     "Handwriting.ani"
   ],
   "No": [
+    "Unavailable.cur",
     "Unavailable.ani"
   ],
   "Person": [
+    "Person.cur",
     "Person.ani"
   ],
   "Pin": [
+    "Pin.cur",
     "Pin.ani"
   ],
   "SizeAll": [
+    "Move.cur",
     "Move.ani"
   ],
   "SizeNESW": [
+    "Diagonal2.cur",
     "Diagonal2.ani"
   ],
   "SizeNS": [
+    "Vertical.cur",
     "Vertical.ani"
   ],
   "SizeNWSE": [
+    "Diagonal1.cur",
     "Diagonal1.ani"
   ],
   "SizeWE": [
+    "Horizontal.cur",
     "Horizontal.ani"
   ],
   "UpArrow": [
+    "Alternate.cur",
     "Alternate.ani"
   ],
   "Wait": [
