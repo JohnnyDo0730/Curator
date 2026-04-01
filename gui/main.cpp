@@ -240,10 +240,13 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow) {
     int argc;
     LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
     
-    // 確保 config_path 為絕對路徑，防止 CWD 改變導致儲存位置錯誤
+    // 確保 config_path 與 autofill_path 為絕對路徑，防止 CWD 改變導致儲存位置錯誤
     wchar_t fullPath[MAX_PATH];
     if (GetFullPathNameW(L"config.json", MAX_PATH, fullPath, NULL)) {
         g_config_path = fullPath;
+    }
+    if (GetFullPathNameW(L"autofill.json", MAX_PATH, fullPath, NULL)) {
+        g_autofill_path = fullPath;
     }
 
     if (argv && argc >= 2) {
@@ -264,6 +267,15 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow) {
 
         if (runOnce) {
             Config c = loadConfig(cfgPath);
+            if (c.packages_path.empty()) {
+                wchar_t exePath[MAX_PATH];
+                GetModuleFileNameW(NULL, exePath, MAX_PATH);
+                fs::path p(exePath);
+                fs::path cursorsDir = p.parent_path() / L"cursors";
+                if (fs::exists(cursorsDir)) {
+                    c.packages_path = cursorsDir.wstring();
+                }
+            }
             // 使用 packages_path 作為游標根資料夾
             std::wstring dir = c.packages_path;
             auto packs = listPacks(dir);
@@ -286,6 +298,17 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow) {
 
     g_config = loadConfig(g_config_path);
     g_autofill = loadAutofill(g_autofill_path);
+
+    // 若為第一次執行或路徑為空，嘗試自動偵測程式同目錄下的 cursors 資料夾
+    if (g_config.packages_path.empty()) {
+        wchar_t exePath[MAX_PATH];
+        GetModuleFileNameW(NULL, exePath, MAX_PATH);
+        fs::path p(exePath);
+        fs::path cursorsDir = p.parent_path() / L"cursors";
+        if (fs::exists(cursorsDir)) {
+            g_config.packages_path = cursorsDir.wstring();
+        }
+    }
 
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
@@ -839,13 +862,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             auto &pkg = g_config.packages[g_sel_pkg];
             for (auto const& [role, file] : pkg.mapping) {
                 if (!file.empty()) {
-                    g_autofill.addRule(role, file);
-                    count++;
+                    if (g_autofill.addRule(role, file)) {
+                        count++;
+                    }
                 }
             }
             g_autofill.save(g_autofill_path);
-            std::wstring msg = L"已從目前套裝 「" + pkg.name + L"」 學習並註冊了 " + std::to_wstring(count) + L" 條匹配規則。";
-            MessageBoxW(hwnd, msg.c_str(), L"註冊成功", MB_OK | MB_ICONINFORMATION);
+            std::wstring msg;
+            if (count > 0) {
+                msg = L"已從目前套裝 「" + pkg.name + L"」 學習並新增了 " + std::to_wstring(count) + L" 條新的匹配規則。";
+            } else {
+                msg = L"目前套裝的所有匹配規則皆已存在。";
+            }
+            MessageBoxW(hwnd, msg.c_str(), L"註冊規則", MB_OK | MB_ICONINFORMATION);
             break;
         }
 
@@ -872,7 +901,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             ofn.lpstrFilter  = L"游標檔案 (*.ani;*.cur)\0*.ani;*.cur\0所有檔案 (*.*)\0*.*\0";
             ofn.lpstrFile    = filePath;
             ofn.nMaxFile     = MAX_PATH;
-            ofn.Flags        = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
+            ofn.Flags        = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
             
             // 嘗試從該套裝目錄開啟
             std::wstring initialDir = (std::filesystem::path(g_config.packages_path) / g_config.packages[g_sel_pkg].name).wstring();

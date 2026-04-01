@@ -21,8 +21,8 @@ public:
     // 只會填充目前的 mapping 中為空或沒指定的項目
     bool applyTo(CursorPackage& pkg, const std::wstring& packageFolder);
     
-    // 新增一條規則
-    void addRule(const std::wstring& role, const std::wstring& filename);
+    // 新增一條規則，回傳是否為新加入的規則
+    bool addRule(const std::wstring& role, const std::wstring& filename);
 };
 
 Autofill loadAutofill(const std::wstring& path);
