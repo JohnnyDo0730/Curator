@@ -1,8 +1,38 @@
 {
-  "mode": "round",
-  "interval_minutes": 30,
-  "cursor_dir": "C:\\Your\\Path\\To\\cursors",
-  "shadow": true,
-  "task_name": "CursorTool",
-  "state_idx_path": "C:\\Your\\Path\\To\\state.idx"
+  "packages": {
+    "list": [
+      {
+        "name": "00_default",
+        "mapping": {
+          "AppStarting": "",
+          "Arrow": "",
+          "Crosshair": "",
+          "Hand": "",
+          "Help": "",
+          "IBeam": "",
+          "NWPen": "",
+          "No": "",
+          "Person": "",
+          "Pin": "",
+          "SizeAll": "",
+          "SizeNESW": "",
+          "SizeNS": "",
+          "SizeNWSE": "",
+          "SizeWE": "",
+          "UpArrow": "",
+          "Wait": ""
+        }
+      }
+    ],
+    "number": 1,
+    "path": ""
+  },
+  "setting": {
+    "cursor_size": 1,
+    "interval_minutes": 30,
+    "mode": "random",
+    "shadow": true,
+    "state_idx_path": "state.idx",
+    "task_name": "CursorTool"
+  }
 }
