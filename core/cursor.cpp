@@ -34,6 +34,16 @@ bool setRegSz(HKEY root, const std::wstring &subkey, const std::wstring &name,
   return true;
 }
 
+bool setRegDword(HKEY root, const std::wstring &subkey, const std::wstring &name,
+                 DWORD value) {
+  HKEY hKey;
+  LONG rc = RegOpenKeyExW(root, subkey.c_str(), 0, KEY_SET_VALUE, &hKey);
+  if (rc != ERROR_SUCCESS) return false;
+  rc = RegSetValueExW(hKey, name.c_str(), 0, REG_DWORD, (const BYTE *)&value, sizeof(DWORD));
+  RegCloseKey(hKey);
+  return rc == ERROR_SUCCESS;
+}
+
 // ──────────────────────────────────────────────
 // applyPackWithMapping
 //   packPath — 游標套裝資料夾
@@ -78,45 +88,53 @@ void applyPack(const fs::path &packPath) {
 // ──────────────────────────────────────────────
 // applyPackage
 //   1. 嘗試從指定套裝 (pkg) 取得檔案
-//   2. 若無，嘗試從 alternative 套裝取得檔案
+//   2. 若無，嘗試從 default 套裝取得檔案
 //   3. 若皆無，退回系統預設 (空字串)
 // ──────────────────────────────────────────────
 void applyPackage(const Config &cfg, const CursorPackage &pkg) {
   fs::path packRoot = cfg.packages_path;
-  fs::path packPath = packRoot / pkg.name;
   
-  // 取得 00_alternative
+  // 取得 00_default 作為備援
   const CursorPackage* altPkg = nullptr;
-  int altIdx = findPackageIndex(cfg, L"00_alternative");
+  int altIdx = findPackageIndex(cfg, L"00_default");
   if (altIdx >= 0) altPkg = &cfg.packages[altIdx];
 
-  // 封裝成最終要套用的 mapping
+  // 封裝成最終要套用的 mapping (只放入確定的絕對路徑)
   std::map<std::wstring, std::wstring> finalMapping;
-  auto fallback = defaultMapping();
 
   for (auto const* role : kCursorRoles) {
     std::wstring roleStr = role;
-    std::wstring file;
+    std::wstring resolvedPath;
 
-    // A. 檢查指定套裝
+    // A. 檢查指定套裝，且檔案必須存在
     auto it = pkg.mapping.find(roleStr);
     if (it != pkg.mapping.end() && !it->second.empty()) {
-      file = it->second;
-    } 
-    // B. 檢查 alternative 套裝
-    else if (altPkg) {
-      auto itAlt = altPkg->mapping.find(roleStr);
-      if (itAlt != altPkg->mapping.end() && !itAlt->second.empty()) {
-        file = itAlt->second;
+      fs::path p = packRoot / pkg.name / it->second;
+      if (fs::exists(p)) {
+        resolvedPath = p.wstring();
       }
     }
 
-    // C. 若皆無，由 applyPackWithMapping 處理 (或此處給予 fallback)
-    // 這裡我們直接填入，若 file 仍為空，代表退回系統預設
-    finalMapping[roleStr] = file;
+    // B. 若指定套裝無此角色或檔案不存在，檢查 default 套裝
+    if (resolvedPath.empty() && altPkg) {
+      auto itAlt = altPkg->mapping.find(roleStr);
+      if (itAlt != altPkg->mapping.end() && !itAlt->second.empty()) {
+        fs::path p = packRoot / altPkg->name / itAlt->second;
+        if (fs::exists(p)) {
+          resolvedPath = p.wstring();
+        }
+      }
+    }
+
+    // 若找到了路徑（來自 pkg 或 altPkg），則存入 finalMapping
+    // 若皆無，則不放入 mapping，讓 applyPackWithMapping 使用 defaultMapping 檢查 pkg 下的預設檔名
+    if (!resolvedPath.empty()) {
+      finalMapping[roleStr] = resolvedPath;
+    }
   }
 
-  applyPackWithMapping(packPath, finalMapping);
+  // 以指定套裝的路徑作為基礎，執行最後的 registry 寫入
+  applyPackWithMapping(packRoot / pkg.name, finalMapping);
 }
 
 // ──────────────────────────────────────────────
@@ -131,6 +149,31 @@ void setCursorShadow(bool on) {
 }
 
 // ──────────────────────────────────────────────
+// setCursorSize
+//   size: 1 (預設) ~ 16
+// ──────────────────────────────────────────────
+#ifndef SPI_SETCURSORSIZE
+#define SPI_SETCURSORSIZE 0x2029
+#endif
+
+void setCursorSize(int size) {
+  if (size < 1) size = 1;
+  if (size > 16) size = 16;
+  
+  // 1. Accessibility Registry
+  setRegDword(HKEY_CURRENT_USER, L"Software\\Microsoft\\Accessibility", L"CursorSize", (DWORD)size);
+  
+  // 2. Control Panel Cursors Registry
+  setRegDword(HKEY_CURRENT_USER, L"Control Panel\\Cursors", L"CursorBaseSize", (DWORD)(size * 32));
+  
+  // 3. System Apply (Using undocumented 0x2029 for accessibility cursor size)
+  SystemParametersInfoW(SPI_SETCURSORSIZE, (UINT)size, NULL, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
+  
+  // 4. Force redraw
+  SystemParametersInfoW(SPI_SETCURSORS, 0, NULL, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
+}
+
+// ──────────────────────────────────────────────
 // listPacks — 列舉 dir 下的所有子資料夾
 // ──────────────────────────────────────────────
 std::vector<fs::path> listPacks(const std::wstring &dir) {
@@ -140,7 +183,7 @@ std::vector<fs::path> listPacks(const std::wstring &dir) {
   for (auto &e : fs::directory_iterator(dir, ec)) {
     if (e.is_directory()) {
       std::wstring name = e.path().filename().wstring();
-      if (name != L"00_alternative") {
+      if (name != L"00_default") {
         v.push_back(e.path());
       }
     }
@@ -181,9 +224,9 @@ fs::path choosePack(const std::vector<fs::path> &packs, const Config &cfg) {
 }
 
 // ──────────────────────────────────────────────
-// restoreDefault — 清除所有游標 reg 值，回到系統預設
+// clearCustomCursors — 清除所有游標自定義路徑，強制回到系統預設
 // ──────────────────────────────────────────────
-void restoreDefault() {
+void clearCustomCursors() {
   static const std::wstring regPath = L"Control Panel\\Cursors";
   auto defMap = defaultMapping();
   for (auto &[role, _] : defMap) {
@@ -191,5 +234,13 @@ void restoreDefault() {
   }
   SystemParametersInfoW(SPI_SETCURSORS, 0, NULL,
                         SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
+}
+
+// ──────────────────────────────────────────────
+// restoreDefault — 完整恢復出廠設定
+// ──────────────────────────────────────────────
+void restoreDefault() {
+  clearCustomCursors();
   setCursorShadow(false);
+  setCursorSize(1);
 }

@@ -4,3 +4,4 @@
 
 void createTask(const Config &cfg, const std::wstring &configPath);
 void deleteTask(const Config &cfg);
+bool checkTaskExists(const Config &cfg);

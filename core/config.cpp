@@ -45,6 +45,9 @@ Config loadConfig(const std::wstring &path) {
       if (s.contains("shadow") && s["shadow"].is_boolean())
         c.shadow = s["shadow"].get<bool>();
 
+      if (s.contains("cursor_size") && s["cursor_size"].is_number())
+        c.cursor_size = s["cursor_size"].get<int>();
+
       if (s.contains("task_name") && s["task_name"].is_string())
         c.task_name = toW(s["task_name"].get<std::string>());
 
@@ -90,6 +93,7 @@ void saveConfig(const Config &c, const std::wstring &path) {
   j["setting"]["mode"]             = toA(c.mode);
   j["setting"]["interval_minutes"] = c.interval_minutes;
   j["setting"]["shadow"]           = c.shadow;
+  j["setting"]["cursor_size"]      = c.cursor_size;
   j["setting"]["task_name"]        = toA(c.task_name);
   j["setting"]["state_idx_path"]   = toA(c.state_idx_path);
 
