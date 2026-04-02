@@ -1,69 +1,114 @@
 {
   "AppStarting": [
     "Working.cur",
-    "Working.ani"
+    "Working.ani",
+    "后台.ani",
+    "working.ani",
+    "bg.ani"
   ],
   "Arrow": [
     "Normal.cur",
-    "Normal.ani"
+    "Normal.ani",
+    "正常.ani",
+    "pointer.ani",
+    "idle.ani"
   ],
   "Crosshair": [
-    "Precision.ani"
+    "Precision.ani",
+    "精选.ani",
+    "精确.ani",
+    "cross.ani"
   ],
   "Hand": [
     "Link.cur",
-    "Link.ani"
+    "Link.ani",
+    "链接.ani",
+    "link.ani"
   ],
   "Help": [
     "Help.cur",
-    "Help.ani"
+    "Help.ani",
+    "帮助.ani",
+    "help.ani"
   ],
   "IBeam": [
     "Text.cur",
-    "Text.ani"
+    "Text.ani",
+    "输入.ani",
+    "text.ani",
+    "input.ani"
   ],
   "NWPen": [
     "Handwriting.cur",
-    "Handwriting.ani"
+    "Handwriting.ani",
+    "笔.ani",
+    "手写.ani",
+    "handwriting.ani"
   ],
   "No": [
     "Unavailable.cur",
-    "Unavailable.ani"
+    "Unavailable.ani",
+    "禁止.ani",
+    "unavailable.ani",
+    "banned.ani"
   ],
   "Person": [
     "Person.cur",
-    "Person.ani"
+    "Person.ani",
+    "person.ani"
   ],
   "Pin": [
     "Pin.cur",
-    "Pin.ani"
+    "Pin.ani",
+    "loc.ani"
   ],
   "SizeAll": [
     "Move.cur",
-    "Move.ani"
+    "Move.ani",
+    "移动.ani",
+    "全.ani",
+    "move.ani"
   ],
   "SizeNESW": [
     "Diagonal2.cur",
-    "Diagonal2.ani"
+    "Diagonal2.ani",
+    "右上.ani",
+    "dgn2.ani",
+    "tr.ani"
   ],
   "SizeNS": [
     "Vertical.cur",
-    "Vertical.ani"
+    "Vertical.ani",
+    "上下.ani",
+    "上.ani",
+    "vert.ani",
+    "vertical.ani"
   ],
   "SizeNWSE": [
     "Diagonal1.cur",
-    "Diagonal1.ani"
+    "Diagonal1.ani",
+    "左上.ani",
+    "dgn1.ani",
+    "tl.ani"
   ],
   "SizeWE": [
     "Horizontal.cur",
-    "Horizontal.ani"
+    "Horizontal.ani",
+    "左右.ani",
+    "左.ani",
+    "horz.ani",
+    "horizontal.ani"
   ],
   "UpArrow": [
     "Alternate.cur",
-    "Alternate.ani"
+    "Alternate.ani",
+    "alternate.ani"
   ],
   "Wait": [
     "Busy.cur",
-    "Busy.ani"
+    "Busy.ani",
+    "忙.ani",
+    "busy.ani",
+    "wait.ani"
   ]
 }
