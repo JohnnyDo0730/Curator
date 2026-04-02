@@ -153,8 +153,13 @@ void RefreshPackageList(HWND hwnd, bool scanDir = false) {
     SendMessageW(hComboTab0, CB_RESETCONTENT, 0, 0);
 
     for (auto &pkg : g_config.packages) {
-        SendMessageW(hComboSelect, CB_ADDSTRING, 0, (LPARAM)pkg.name.c_str());
-        SendMessageW(hComboTab0, CB_ADDSTRING, 0, (LPARAM)pkg.name.c_str());
+        std::wstring displayName = pkg.name;
+        std::wstring pkgDir = (fs::path(g_config.packages_path) / pkg.name).wstring();
+        if (!fs::exists(pkgDir)) {
+            displayName += L" (已缺失)";
+        }
+        SendMessageW(hComboSelect, CB_ADDSTRING, 0, (LPARAM)displayName.c_str());
+        SendMessageW(hComboTab0, CB_ADDSTRING, 0, (LPARAM)displayName.c_str());
     }
 
     if (g_sel_pkg >= 0 && g_sel_pkg < (int)g_config.packages.size())
@@ -434,8 +439,8 @@ void CreateTab0Controls(HWND hwnd) {
     CreateWindowExW(0, L"STATIC", L"套裝:", WS_CHILD | WS_VISIBLE | SS_LEFT,
         Scale(170), Scale(gy+2), Scale(45), Scale(20), hwnd, (HMENU)IDC_LABEL_PACK, hInst, NULL);
 
-    HWND hComboPack = CreateWindowExW(0, L"COMBOBOX", L"", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST,
-        Scale(218), Scale(gy), Scale(177), Scale(160), hwnd, (HMENU)IDC_COMBO_PACK, hInst, NULL);
+    HWND hComboPack = CreateWindowExW(0, L"COMBOBOX", L"", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL,
+        Scale(218), Scale(gy), Scale(177), Scale(200), hwnd, (HMENU)IDC_COMBO_PACK, hInst, NULL);
     // 填入套裝
     for (auto &pkg : g_config.packages)
         SendMessageW(hComboPack, CB_ADDSTRING, 0, (LPARAM)pkg.name.c_str());
@@ -493,8 +498,8 @@ void CreateTab1Controls(HWND hwnd) {
     // 選擇區域
     CreateWindowExW(0, L"STATIC", L"選擇編輯套裝:", WS_CHILD | SS_LEFT,
         Scale(25), Scale(y+2), Scale(100), Scale(20), hwnd, (HMENU)IDC_LABEL_PKG_HINT, hInst, NULL);
-    CreateWindowExW(0, L"COMBOBOX", L"", WS_CHILD | CBS_DROPDOWNLIST,
-        Scale(125), Scale(y), Scale(205), Scale(200), hwnd, (HMENU)IDC_COMBO_PKG_SELECT, hInst, NULL);
+    CreateWindowExW(0, L"COMBOBOX", L"", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL,
+        Scale(125), Scale(y), Scale(205), Scale(300), hwnd, (HMENU)IDC_COMBO_PKG_SELECT, hInst, NULL);
     y += 35;
 
     // 角色映射區塊
@@ -545,7 +550,7 @@ void CreateTab1Controls(HWND hwnd) {
     CreateWindowExW(0, L"BUTTON", L"註冊當前規則", WS_CHILD | BS_PUSHBUTTON,
         Scale(185), Scale(by), Scale(110), Scale(28), hwnd, (HMENU)IDC_BTN_ADD_RULE, hInst, NULL);
 
-    CreateWindowExW(0, L"BUTTON", L"儲存所有設置", WS_CHILD | BS_PUSHBUTTON,
+    CreateWindowExW(0, L"BUTTON", L"儲存所有套裝", WS_CHILD | BS_PUSHBUTTON,
         Scale(315), Scale(by), Scale(110), Scale(28), hwnd, (HMENU)IDC_BTN_PKG_SAVE, hInst, NULL);
     
     // 初始禁用編輯區
@@ -739,9 +744,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             std::thread([hwnd, isSpecificPack, packSel]() {
                 if (isSpecificPack) {
                     if (packSel >= 0 && packSel < (int)g_config.packages.size()) {
-                        applyPackage(g_config, g_config.packages[packSel]);
+                        bool ok = applyPackage(g_config, g_config.packages[packSel]);
                         setCursorShadow(g_config.shadow);
-                        PostMessageW(hwnd, WM_USER_TASK_DONE, 33, 0);
+                        PostMessageW(hwnd, WM_USER_TASK_DONE, ok ? 33 : 34, 0);
                     } else {
                         PostMessageW(hwnd, WM_USER_TASK_DONE, 31, 0);
                     }
@@ -832,7 +837,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
         case IDC_BTN_PKG_SAVE: {
             saveConfig(g_config, g_config_path);
-            MessageBoxW(hwnd, L"所有配置與套裝映射設定已儲存。", L"儲存成功", MB_OK | MB_ICONINFORMATION);
+            MessageBoxW(hwnd, L"所有套裝的變更已成功儲存到 config.json。", L"儲存成功", MB_OK | MB_ICONINFORMATION);
             break;
         }
 
@@ -961,6 +966,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         else if (action == 31) MessageBoxW(hwnd, L"未選擇有效套裝", L"提示", MB_OK | MB_ICONWARNING);
         else if (action == 32) MessageBoxW(hwnd, L"套裝資料夾內找不到任何子資料夾", L"錯誤", MB_OK | MB_ICONERROR);
         else if (action == 33) MessageBoxW(hwnd, L"游標套用成功！", L"提示", MB_OK | MB_ICONINFORMATION);
+        else if (action == 34) MessageBoxW(hwnd, L"警告：找不到該套裝資料夾，已將游標恢復為系統預設。", L"套裝缺失", MB_OK | MB_ICONWARNING);
         else if (action == 4)  MessageBoxW(hwnd, L"已恢復為系統預設游標", L"提示", MB_OK | MB_ICONINFORMATION);
         return 0;
     }

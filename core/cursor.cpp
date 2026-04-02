@@ -90,9 +90,13 @@ void applyPack(const fs::path &packPath) {
 //   1. 嘗試從指定套裝 (pkg) 取得檔案
 //   2. 若無，嘗試從 default 套裝取得檔案
 //   3. 若皆無，退回系統預設 (空字串)
+// 套用套裝（從 Config packages list 中套用一個具名套裝，支援 default fallback）
+// 回傳 true 代表找到套裝資料夾，false 代表資料夾不存在（將回歸系統預設）
 // ──────────────────────────────────────────────
-void applyPackage(const Config &cfg, const CursorPackage &pkg) {
+bool applyPackage(const Config &cfg, const CursorPackage &pkg) {
   fs::path packRoot = cfg.packages_path;
+  fs::path pkgDir = packRoot / pkg.name;
+  bool pkgExists = fs::exists(pkgDir);
   
   // 取得 00_default 作為備援
   const CursorPackage* altPkg = nullptr;
@@ -134,7 +138,8 @@ void applyPackage(const Config &cfg, const CursorPackage &pkg) {
   }
 
   // 以指定套裝的路徑作為基礎，執行最後的 registry 寫入
-  applyPackWithMapping(packRoot / pkg.name, finalMapping);
+  applyPackWithMapping(pkgDir, finalMapping);
+  return pkgExists;
 }
 
 // ──────────────────────────────────────────────
